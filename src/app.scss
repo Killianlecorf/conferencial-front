@@ -42,7 +42,7 @@
     display: block;
     margin: 0 auto 24px auto;
     padding: 10px 20px;
-    background: #27ae60;
+    background: #007bff;
     color: white;
     font-weight: 600;
     border: none;
@@ -51,7 +51,7 @@
     transition: background 0.3s;
 
     &:hover {
-      background: #1e8449;
+      background: #0056b3;
     }
   }
 
@@ -83,7 +83,6 @@
   }
 }
 
-/* Modal styles */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -156,11 +155,11 @@
       }
 
       button[type='submit'] {
-        background: #27ae60;
+        background: #0056b3;
         color: white;
 
         &:hover:not(:disabled) {
-          background: #1e8449;
+          background: #0056b3;
         }
       }
 

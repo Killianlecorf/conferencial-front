@@ -12,15 +12,49 @@
     max-width: 80%;
   }
 
+  .admin-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .edit-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: #0056b3;
+    }
+
+    &:focus {
+      outline: 2px solid #0056b3;
+      outline-offset: 2px;
+    }
+  }
+
   .delete-button {
     background-color: #dc3545;
     color: white;
     border: none;
     padding: 0.5rem 1rem;
     cursor: pointer;
+    border-radius: 4px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
 
     &:hover {
       background-color: #c82333;
+    }
+
+    &:focus {
+      outline: 2px solid #c82333;
+      outline-offset: 2px;
     }
   }
 
