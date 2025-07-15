@@ -1,13 +1,14 @@
+import type { Conference } from '../../types/conference.type';
 import './ConferentialItem.scss';
-import type { Conference } from '../../App';
 
 type Props = {
   conf: Conference;
   isAdmin: boolean;
   onDelete: (id: number) => void;
+  onEdit: (conf: Conference) => void;
 };
 
-export default function ConferenceItem({ conf, isAdmin, onDelete }: Props) {
+export default function ConferenceItem({ conf, isAdmin, onDelete, onEdit }: Props) {
   return (
     <li className="conference-item">
       <div className="conf-info">
@@ -22,9 +23,14 @@ export default function ConferenceItem({ conf, isAdmin, onDelete }: Props) {
         <p>Slot n°: {conf.slotNumber}</p>
       </div>
       {isAdmin && (
-        <button className="delete-button" onClick={() => onDelete(conf.id)}>
-          Supprimer
-        </button>
+        <div className="admin-buttons">
+          <button className="edit-button" onClick={() => onEdit(conf)}>
+            Modifier
+          </button>
+          <button className="delete-button" onClick={() => onDelete(conf.id)}>
+            Supprimer
+          </button>
+        </div>
       )}
     </li>
   );

@@ -3,35 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import request from './utils/request';
 
 import AddConferenceModal from './components/AddConferenceModal/AddConferenceModal';
+import EditConferenceModal from './components/EditConferenceModal/EditConferenceModal';
 import ConferenceItem from './components/ConferentialItem/ConferentialItem';
 
 import './App.scss';
-
-export type User = {
-  id: number;
-  fullName: string;
-  email: string;
-  isSponsor: boolean;
-  isAdmin: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type Conference = {
-  id: number;
-  title: string;
-  description: string;
-  speakerName: string;
-  speakerBio?: string;
-  startDateTime: string;
-  endDateTime: string;
-  slotNumber: number;
-};
+import type { User } from './types/user.type';
+import type { Conference } from './types/conference.type';
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [conferences, setConferences] = useState<Conference[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingConf, setEditingConf] = useState<Conference | null>(null);
   const [selectedDay, setSelectedDay] = useState<string>('2025-07-15');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -51,7 +34,6 @@ function App() {
         setUser(null);
       }
     }
-
     fetchUser();
   }, []);
 
@@ -68,7 +50,6 @@ function App() {
       }
       setLoading(false);
     }
-
     fetchConferencesByDay();
   }, [selectedDay]);
 
@@ -94,13 +75,12 @@ function App() {
   }
 
   async function handleDeleteConference(id: number) {
-    const confirm = window.confirm('Supprimer cette conférence ?');
-    if (!confirm) return;
+    const confirmDelete = window.confirm('Supprimer cette conférence ?');
+    if (!confirmDelete) return;
 
     try {
       const res = await request(`conferences/${id}`, 'DELETE', {});
       if (res.ok) {
-        console.log('Conférence supprimée avec succès');
         setConferences(prev => prev.filter(c => c.id !== id));
       } else {
         console.error('Erreur suppression:', res.statusText);
@@ -108,6 +88,19 @@ function App() {
     } catch (err) {
       console.error('Erreur suppression:', err);
     }
+  }
+
+  function handleEditConference(conf: Conference) {
+    setEditingConf(conf);
+  }
+
+  function handleEditModalClose() {
+    setEditingConf(null);
+  }
+
+  async function handleUpdatedConference(updatedConf: Conference) {
+    setConferences(prev => prev.map(c => (c.id === updatedConf.id ? updatedConf : c)));
+    setEditingConf(null);
   }
 
   return (
@@ -159,6 +152,7 @@ function App() {
               conf={conf}
               isAdmin={!!user?.isAdmin}
               onDelete={handleDeleteConference}
+              onEdit={handleEditConference}
             />
           ))}
         </ul>
@@ -168,6 +162,14 @@ function App() {
         <AddConferenceModal
           onClose={() => setShowAddModal(false)}
           onAdded={handleAddedConference}
+        />
+      )}
+
+      {editingConf && (
+        <EditConferenceModal
+          conference={editingConf}
+          onClose={handleEditModalClose}
+          onUpdated={handleUpdatedConference}
         />
       )}
     </div>
