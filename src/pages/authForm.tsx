@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import request from '../utils/request';
+import { useNavigate } from 'react-router-dom';
 
 export default function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
@@ -9,7 +10,8 @@ export default function AuthForm() {
     fullName: '',
   });
   const [message, setMessage] = useState('');
-  const [messageColor, setMessageColor] = useState('red'); // couleur du message
+  const [messageColor, setMessageColor] = useState('red');
+  const navigate = useNavigate();
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -33,16 +35,15 @@ export default function AuthForm() {
       if (isLogin) {
         setMessageColor('green');
         setMessage('Connexion réussie !');
-        // TODO: gérer la suite (ex: redirection, stockage token)
+        navigate('/');
       } else {
         setMessageColor('green');
         setMessage('Inscription réussie !');
 
-        // Après 2 secondes, revenir au formulaire de connexion
         setTimeout(() => {
           setIsLogin(true);
           setMessage('');
-          setFormData({ email: '', password: '', fullName: '' }); // reset form
+          setFormData({ email: '', password: '', fullName: '' });
         }, 2000);
       }
     }
