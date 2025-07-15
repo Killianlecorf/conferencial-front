@@ -75,7 +75,7 @@ export default function AddConferenceModal({ onClose, onAdded }: AddConferenceMo
                 onAdded(res.data);
                 navigate('/');
             } else {
-            setError(`Erreur ${res.status} : ${res.data?.error || res.message || 'Erreur inconnue'}`);
+            setError(`${res.data?.error || res.message || 'Erreur inconnue'}`);
             }
         } catch {
             setError("Erreur lors de l'ajout de la conférence");
