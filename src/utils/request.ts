@@ -22,9 +22,11 @@ const request = async (url: string, method: string, bodyContent?: any): Promise<
       data: null as any
     };
 
-  if (response.ok) {
-    sentResponse.data = await response.json();
-  }
+    const contentType = response.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+      sentResponse.data = await response.json();
+    }
 
     return sentResponse;
   } catch (error) {
@@ -37,6 +39,7 @@ const request = async (url: string, method: string, bodyContent?: any): Promise<
     };
   }
 };
+
 
 
 const path = 'http://localhost:8000/';
