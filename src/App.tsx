@@ -180,6 +180,12 @@ function App() {
         </button>
       )}
 
+      {user && (
+        <button className="add-conf-button" onClick={() => navigate('/profile')} style={{ marginLeft: 10 }}>
+          Mon Profil
+        </button>
+      )}
+
       <div className="day-selector" style={{ marginBottom: 20 }}>
         <span>Sélectionner un jour : </span>
         {days.map(day => (
