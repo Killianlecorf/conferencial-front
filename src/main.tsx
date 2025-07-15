@@ -2,10 +2,10 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
-import './index.css';
-import AuthForm from './pages/authForm';
+import AuthForm from './pages/AuthForm/AuthForm';
 import App from './App';
 import PrivateRoute from './utils/PrivateRoute';
+import './index.scss';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

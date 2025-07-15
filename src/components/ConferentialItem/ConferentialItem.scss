@@ -1,0 +1,31 @@
+.conference-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+
+  .conf-info {
+    max-width: 80%;
+  }
+
+  .delete-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #c82333;
+    }
+  }
+
+  .speaker-bio {
+    font-style: italic;
+    color: #555;
+  }
+}
