@@ -44,14 +44,19 @@ function App() {
       setLoading(true);
       const res = await request(`conferences?day=${selectedDay}`, 'GET');
       if (res.ok) {
-        setConferences(res.data);
+        // Ajout de la propriété isJoined pour chaque conf selon l'user connecté
+        const confsWithJoinStatus = res.data.map((conf: Conference) => {
+          const isJoined = user ? conf.conferentialUser.some(u => u.id === user.id) : false;
+          return { ...conf, isJoined };
+        });
+        setConferences(confsWithJoinStatus);
       } else {
         setConferences([]);
       }
       setLoading(false);
     }
     fetchConferencesByDay();
-  }, [selectedDay]);
+  }, [selectedDay, user]);
 
   async function handleLogout() {
     try {
@@ -69,7 +74,7 @@ function App() {
 
   function handleAddedConference(newConf: Conference) {
     if (newConf.startDateTime.startsWith(selectedDay)) {
-      setConferences(prev => [...prev, newConf]);
+      setConferences(prev => [...prev, { ...newConf, isJoined: false }]);
     }
     setShowAddModal(false);
   }
@@ -102,6 +107,61 @@ function App() {
     setConferences(prev => prev.map(c => (c.id === updatedConf.id ? updatedConf : c)));
     setEditingConf(null);
   }
+
+  const handleJoin = async (conf: Conference) => {
+    try {
+      const response = await request(`conferences/${conf.id}/user`, 'PUT', {});
+      if (!response.ok) {
+        const data = await response.json();
+        alert(data.error || 'Erreur lors de l’inscription');
+        return;
+      }
+      alert('Inscription réussie !');
+      setConferences(prev =>
+        prev.map(c =>
+          c.id === conf.id
+            ? {
+                ...c,
+                isJoined: true,
+                conferentialUser: user ? [...c.conferentialUser, user] : c.conferentialUser,
+              }
+            : c
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      alert('Une erreur est survenue');
+    }
+  };
+
+  const handleLeave = async (conf: Conference) => {
+    try {
+      const response = await request(`conferences/${conf.id}/user`, 'DELETE', {});
+      if (!response.ok) {
+        const data = await response.json();
+        alert(data.error || 'Erreur lors du retrait');
+        return;
+      }
+      alert('Retrait réussi !');
+
+      setConferences(prev =>
+        prev.map(c =>
+          c.id === conf.id
+            ? {
+                ...c,
+                isJoined: false,
+                conferentialUser: user
+                  ? c.conferentialUser.filter(u => u.id !== user.id)
+                  : c.conferentialUser,
+              }
+            : c
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      alert('Une erreur est survenue');
+    }
+  };
 
   return (
     <div className="planning-container">
@@ -151,8 +211,11 @@ function App() {
               key={conf.id}
               conf={conf}
               isAdmin={!!user?.isAdmin}
+              isSponsor={!!user?.isSponsor}
               onDelete={handleDeleteConference}
               onEdit={handleEditConference}
+              onJoin={() => handleJoin(conf)}
+              onLeave={() => handleLeave(conf)}
             />
           ))}
         </ul>

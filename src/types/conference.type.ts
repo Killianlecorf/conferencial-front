@@ -1,3 +1,5 @@
+import type { User } from "./user.type";
+
 export type Conference = {
   id: number;
   title: string;
@@ -7,4 +9,5 @@ export type Conference = {
   startDateTime: string;
   endDateTime: string;
   slotNumber: number;
+  conferentialUser: User[];
 };
