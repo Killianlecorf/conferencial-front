@@ -3,9 +3,10 @@ import request from '../../utils/request';
 import { useNavigate } from 'react-router-dom';
 import type { Conference } from '../../types/conference.type';
 
-type AddConferenceModalProps = {
+type EditConferenceModalProps = {
+  conference: Conference;
   onClose: () => void;
-  onAdded: (newConf: Conference) => void;
+  onUpdated: (updatedConf: Conference) => void;
 };
 
 function getWeekDates() {
@@ -33,18 +34,26 @@ function getWeekDates() {
   ];
 }
 
-export default function AddConferenceModal({ onClose, onAdded }: AddConferenceModalProps) {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [speakerName, setSpeakerName] = useState('');
-  const [speakerBio, setSpeakerBio] = useState('');
-  const [date, setDate] = useState('');
-  const [slotNumber, setSlotNumber] = useState(1);
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export default function EditConferenceModal({ conference, onClose, onUpdated }: EditConferenceModalProps) {
+  const [title, setTitle] = useState(conference.title);
+  const [description, setDescription] = useState(conference.description);
+  const [speakerName, setSpeakerName] = useState(conference.speakerName);
+  const [speakerBio, setSpeakerBio] = useState(conference.speakerBio || '');
+  const [date, setDate] = useState(conference.startDateTime.split('T')[0]);
+  const [slotNumber, setSlotNumber] = useState(conference.slotNumber);
+  const conferencer = {
+        title,
+        description,
+        speakerName,
+        speakerBio,
+        date,
+        slotNumber
+    };
+  
 
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const weekDates = getWeekDates();
 
@@ -52,31 +61,27 @@ export default function AddConferenceModal({ onClose, onAdded }: AddConferenceMo
     e.preventDefault();
 
     if (!title || !description || !speakerName || !date || slotNumber < 1) {
-      setError('Merci de remplir tous les champs obligatoires.');
-      return;
+    setError('Merci de remplir tous les champs obligatoires.');
+    return;
     }
 
     setLoading(true);
     setError(null);
 
     try {
-      const res = await request('conferences', 'POST', {
-        title,
-        description,
-        speakerName,
-        speakerBio,
-        date,
-        slotNumber,
-      });
-
-      if (res.ok) {
-        onAdded(res.data);
-        navigate('/');
+      const response = await request(`conferences/${conference.id}`, 'PUT' , conferencer)
+        
+      
+        window.location.reload();
+      if (response.ok) {
+        console.log('Conférence mise à jour avec succès');
+        
       } else {
-        setError(`Erreur ${res.status} : ${res.message}`);
+        console.log(`Erreur ${response.status} : ${response.message}`);
+        
       }
     } catch {
-      setError('Erreur lors de l\'ajout de la conférence');
+      setError('Erreur réseau lors de la mise à jour.');
     } finally {
       setLoading(false);
     }
@@ -85,7 +90,7 @@ export default function AddConferenceModal({ onClose, onAdded }: AddConferenceMo
   return (
     <div className="modal-overlay">
       <div className="modal">
-        <h2>Ajouter une conférence</h2>
+        <h2>Modifier la conférence</h2>
         <form onSubmit={handleSubmit}>
           <label>
             Titre*:
@@ -137,7 +142,7 @@ export default function AddConferenceModal({ onClose, onAdded }: AddConferenceMo
 
           <div className="modal-buttons">
             <button type="submit" disabled={loading}>
-              {loading ? 'Ajout en cours...' : 'Ajouter'}
+              {loading ? 'Mise à jour en cours...' : 'Enregistrer'}
             </button>
             <button type="button" onClick={onClose} disabled={loading}>
               Annuler

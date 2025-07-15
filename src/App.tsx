@@ -3,35 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import request from './utils/request';
 
 import AddConferenceModal from './components/AddConferenceModal/AddConferenceModal';
+import EditConferenceModal from './components/EditConferenceModal/EditConferenceModal';
 import ConferenceItem from './components/ConferentialItem/ConferentialItem';
 
 import './App.scss';
-
-export type User = {
-  id: number;
-  fullName: string;
-  email: string;
-  isSponsor: boolean;
-  isAdmin: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type Conference = {
-  id: number;
-  title: string;
-  description: string;
-  speakerName: string;
-  speakerBio?: string;
-  startDateTime: string;
-  endDateTime: string;
-  slotNumber: number;
-};
+import type { User } from './types/user.type';
+import type { Conference } from './types/conference.type';
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [conferences, setConferences] = useState<Conference[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingConf, setEditingConf] = useState<Conference | null>(null);
   const [selectedDay, setSelectedDay] = useState<string>('2025-07-15');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -51,7 +34,6 @@ function App() {
         setUser(null);
       }
     }
-
     fetchUser();
   }, []);
 
@@ -62,15 +44,19 @@ function App() {
       setLoading(true);
       const res = await request(`conferences?day=${selectedDay}`, 'GET');
       if (res.ok) {
-        setConferences(res.data);
+        // Ajout de la propriété isJoined pour chaque conf selon l'user connecté
+        const confsWithJoinStatus = res.data.map((conf: Conference) => {
+          const isJoined = user ? conf.conferentialUser.some(u => u.id === user.id) : false;
+          return { ...conf, isJoined };
+        });
+        setConferences(confsWithJoinStatus);
       } else {
         setConferences([]);
       }
       setLoading(false);
     }
-
     fetchConferencesByDay();
-  }, [selectedDay]);
+  }, [selectedDay, user]);
 
   async function handleLogout() {
     try {
@@ -88,19 +74,18 @@ function App() {
 
   function handleAddedConference(newConf: Conference) {
     if (newConf.startDateTime.startsWith(selectedDay)) {
-      setConferences(prev => [...prev, newConf]);
+      setConferences(prev => [...prev, { ...newConf, isJoined: false }]);
     }
     setShowAddModal(false);
   }
 
   async function handleDeleteConference(id: number) {
-    const confirm = window.confirm('Supprimer cette conférence ?');
-    if (!confirm) return;
+    const confirmDelete = window.confirm('Supprimer cette conférence ?');
+    if (!confirmDelete) return;
 
     try {
       const res = await request(`conferences/${id}`, 'DELETE', {});
       if (res.ok) {
-        console.log('Conférence supprimée avec succès');
         setConferences(prev => prev.filter(c => c.id !== id));
       } else {
         console.error('Erreur suppression:', res.statusText);
@@ -109,6 +94,74 @@ function App() {
       console.error('Erreur suppression:', err);
     }
   }
+
+  function handleEditConference(conf: Conference) {
+    setEditingConf(conf);
+  }
+
+  function handleEditModalClose() {
+    setEditingConf(null);
+  }
+
+  async function handleUpdatedConference(updatedConf: Conference) {
+    setConferences(prev => prev.map(c => (c.id === updatedConf.id ? updatedConf : c)));
+    setEditingConf(null);
+  }
+
+  const handleJoin = async (conf: Conference) => {
+    try {
+      const response = await request(`conferences/${conf.id}/user`, 'PUT', {});
+      if (!response.ok) {
+        const data = await response.json();
+        alert(data.error || 'Erreur lors de l’inscription');
+        return;
+      }
+      alert('Inscription réussie !');
+      setConferences(prev =>
+        prev.map(c =>
+          c.id === conf.id
+            ? {
+                ...c,
+                isJoined: true,
+                conferentialUser: user ? [...c.conferentialUser, user] : c.conferentialUser,
+              }
+            : c
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      alert('Une erreur est survenue');
+    }
+  };
+
+  const handleLeave = async (conf: Conference) => {
+    try {
+      const response = await request(`conferences/${conf.id}/user`, 'DELETE', {});
+      if (!response.ok) {
+        const data = await response.json();
+        alert(data.error || 'Erreur lors du retrait');
+        return;
+      }
+      alert('Retrait réussi !');
+
+      setConferences(prev =>
+        prev.map(c =>
+          c.id === conf.id
+            ? {
+                ...c,
+                isJoined: false,
+                conferentialUser: user
+                  ? c.conferentialUser.filter(u => u.id !== user.id)
+                  : c.conferentialUser,
+              }
+            : c
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      alert('Une erreur est survenue');
+    }
+  };
 
   return (
     <div className="planning-container">
@@ -158,7 +211,11 @@ function App() {
               key={conf.id}
               conf={conf}
               isAdmin={!!user?.isAdmin}
+              isSponsor={!!user?.isSponsor}
               onDelete={handleDeleteConference}
+              onEdit={handleEditConference}
+              onJoin={() => handleJoin(conf)}
+              onLeave={() => handleLeave(conf)}
             />
           ))}
         </ul>
@@ -168,6 +225,14 @@ function App() {
         <AddConferenceModal
           onClose={() => setShowAddModal(false)}
           onAdded={handleAddedConference}
+        />
+      )}
+
+      {editingConf && (
+        <EditConferenceModal
+          conference={editingConf}
+          onClose={handleEditModalClose}
+          onUpdated={handleUpdatedConference}
         />
       )}
     </div>
