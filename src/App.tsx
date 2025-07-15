@@ -275,17 +275,16 @@ function App() {
                                 <h3 className="time-header">{time}</h3>
                                 <ul className="conference-items">
                                     {groupedConferences[time].map(conf => (
-                                        <li key={conf.id}>
-                                            <ConferenceItem
-                                                conf={conf}
-                                                isAdmin={!!user?.isAdmin}
-                                                isSponsor={!!user?.isSponsor}
-                                                onDelete={handleDeleteConference}
-                                                onEdit={handleEditConference}
-                                                onJoin={() => handleJoin(conf)}
-                                                onLeave={() => handleLeave(conf)}
-                                            />
-                                        </li>
+                                        <ConferenceItem
+                                            key={conf.id}
+                                            conf={conf}
+                                            isAdmin={!!user?.isAdmin}
+                                            isSponsor={!!user?.isSponsor}
+                                            onDelete={handleDeleteConference}
+                                            onEdit={handleEditConference}
+                                            onJoin={() => handleJoin(conf)}
+                                            onLeave={() => handleLeave(conf)}
+                                        />
                                     ))}
                                 </ul>
                             </div>
