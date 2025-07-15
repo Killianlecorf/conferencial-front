@@ -71,10 +71,9 @@ export default function EditConferenceModal({ conference, onClose, onUpdated }: 
     try {
       const response = await request(`conferences/${conference.id}`, 'PUT' , conferencer)
         
-      
-        window.location.reload();
       if (response.ok) {
-        console.log('Conférence mise à jour avec succès');
+        onUpdated(response.data);
+        navigate('/');
         
       } else {
         console.log(`Erreur ${response.status} : ${response.message}`);

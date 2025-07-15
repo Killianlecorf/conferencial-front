@@ -22,9 +22,9 @@ const request = async (url: string, method: string, bodyContent?: any): Promise<
       data: null as any
     };
 
-    if (response.status === 200) {
-      sentResponse.data = await response.json();
-    }
+  if (response.ok) {
+    sentResponse.data = await response.json();
+  }
 
     return sentResponse;
   } catch (error) {
