@@ -9,7 +9,7 @@ function PrivateRoute({ children }: { children: JSX.Element }) {
     const checkAuth = async () => {
       const res = await request('isAuth', 'GET');
 
-      if (res.ok && res.data?.authenticated) {
+      if (res.ok) {
         setIsAuth(true);
       } else {
         setIsAuth(false);

@@ -1,35 +1,66 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react';
+import request from './utils/request';
+import './App.scss';
+import { useNavigate } from 'react-router-dom';
+
+export type User = {
+    id: number;
+    fullName: string;
+    email: string;
+    isSponsor: boolean;
+    isAdmin: boolean;
+    createdAt: string;
+    updatedAt: string;
+};
 
 function App() {
-  const [count, setCount] = useState(0)
+    const [user, setUser] = useState<User | null>(null);
+    const navigate = useNavigate();
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    useEffect(() => {
+        async function fetchUser() {
+            const res = await request('users/current', 'GET');
+            if (res.ok) {
+                setUser(res.data);
+            } else {
+                setUser(null);
+            }
+        }
+        fetchUser();
+    }, []);
+
+
+    async function handleLogout() {
+    try {
+        const response = await request('logout', 'POST', {});
+        if (response.ok) {
+            setUser(null);
+            navigate('/auth');
+        } else {
+            const errorData = await response.json();
+            console.error('Erreur logout:', errorData.message || response.statusText);
+        }
+    } catch (error) {
+        console.error('Erreur logout:', error);
+    }
 }
 
-export default App
+
+    return (
+        <div className="planning-container">
+            <h1>Planning des conférences</h1>
+
+            {user && (
+                <div style={{ marginBottom: 16 }}>
+                    <span>Bonjour, {user.fullName}</span>
+                    <button onClick={handleLogout} style={{ marginLeft: 8 }}>
+                        Déconnexion
+                    </button>
+                </div>
+            )}
+
+        </div>
+    );
+}
+
+export default App;

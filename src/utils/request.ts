@@ -8,7 +8,10 @@ const request = async (url: string, method: string, bodyContent?: any): Promise<
             }
         };
 
-        if (method !== 'GET' && method !== 'DELETE') {
+        if (method !== 'GET' && method !== 'DELETE' && bodyContent !== undefined) {
+            options.headers = {
+                'Content-Type': 'application/json'
+            };
             options.body = JSON.stringify(bodyContent);
         }
 
