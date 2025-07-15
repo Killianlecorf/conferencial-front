@@ -1,49 +1,43 @@
 const request = async (url: string, method: string, bodyContent?: any): Promise<any> => {
-    try {
-        let options: RequestInit = {
-            method,
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        };
+  try {
+    const options: RequestInit = {
+      method,
+      credentials: 'include',
+      headers: {}
+    };
 
-        if (method !== 'GET' && method !== 'DELETE' && bodyContent !== undefined) {
-            options.headers = {
-                'Content-Type': 'application/json'
-            };
-            options.body = JSON.stringify(bodyContent);
-        }
-
-        const response = await fetch(path + url, options);
-
-        let sentResponse: {
-            ok: boolean;
-            status: number;
-            message: string;
-            data: any;
-        } = {
-            ok: response.ok,
-            status: response.status,
-            message: response.statusText,
-            data: null
-        };
-
-        if (response.status === 200) {
-            sentResponse.data = await response.json();
-        }
-
-        return sentResponse;
-    } catch (error) {
-        console.error(error);
-        return {
-            ok: false,
-            status: 500,
-            message: 'Error request',
-            data: null
-        };
+    if (method !== 'GET' && bodyContent !== undefined) {
+      options.headers = {
+        'Content-Type': 'application/json'
+      };
+      options.body = JSON.stringify(bodyContent);
     }
+
+    const response = await fetch(path + url, options);
+
+    const sentResponse = {
+      ok: response.ok,
+      status: response.status,
+      message: response.statusText,
+      data: null as any
+    };
+
+    if (response.status === 200) {
+      sentResponse.data = await response.json();
+    }
+
+    return sentResponse;
+  } catch (error) {
+    console.error(error);
+    return {
+      ok: false,
+      status: 500,
+      message: 'Error request',
+      data: null
+    };
+  }
 };
+
 
 const path = 'http://localhost:8000/';
 

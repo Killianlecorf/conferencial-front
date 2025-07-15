@@ -1,34 +1,58 @@
 import React, { useState } from 'react';
 import request from '../../utils/request';
-import type { Conference } from '../ConferenctialItem/ConferencialItem';
+import type { Conference } from '../../App';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 type AddConferenceModalProps = {
   onClose: () => void;
   onAdded: (newConf: Conference) => void;
 };
 
+function getWeekDates() {
+  const today = new Date();
+  const day = today.getDay();
+
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((day + 6) % 7));
+
+  const tuesday = new Date(monday);
+  tuesday.setDate(monday.getDate() + 1);
+
+  const wednesday = new Date(monday);
+  wednesday.setDate(monday.getDate() + 2);
+
+  const thursday = new Date(monday);
+  thursday.setDate(monday.getDate() + 3);
+
+  const format = (d: Date) => d.toISOString().split('T')[0];
+
+  return [
+    { label: 'Mardi', value: format(tuesday) },
+    { label: 'Mercredi', value: format(wednesday) },
+    { label: 'Jeudi', value: format(thursday) },
+  ];
+}
+
 export default function AddConferenceModal({ onClose, onAdded }: AddConferenceModalProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [speakerName, setSpeakerName] = useState('');
   const [speakerBio, setSpeakerBio] = useState('');
-  const [startDateTime, setStartDateTime] = useState('');
-  const [endDateTime, setEndDateTime] = useState('');
-  const [slotNumber, setSlotNumber] = useState(0);
+  const [date, setDate] = useState('');
+  const [slotNumber, setSlotNumber] = useState(1);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const navigate = useNavigate();
+
+  const weekDates = getWeekDates();
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!title || !description || !speakerName || !startDateTime || !endDateTime) {
+    if (!title || !description || !speakerName || !date || slotNumber < 1) {
       setError('Merci de remplir tous les champs obligatoires.');
-      return;
-    }
-
-    if (new Date(startDateTime) >= new Date(endDateTime)) {
-      setError('La date de début doit être avant la date de fin.');
       return;
     }
 
@@ -41,13 +65,13 @@ export default function AddConferenceModal({ onClose, onAdded }: AddConferenceMo
         description,
         speakerName,
         speakerBio,
-        startDateTime,
-        endDateTime,
+        date,
         slotNumber,
       });
 
       if (res.ok) {
         onAdded(res.data);
+        navigate('/');
       } else {
         setError(`Erreur ${res.status} : ${res.message}`);
       }
@@ -84,24 +108,30 @@ export default function AddConferenceModal({ onClose, onAdded }: AddConferenceMo
           </label>
 
           <label>
-            Date et heure de début*:
-            <input type="datetime-local" value={startDateTime} onChange={e => setStartDateTime(e.target.value)} required />
+            Date (seulement mardi à jeudi)*:
+            <select value={date} onChange={e => setDate(e.target.value)} required>
+              <option value="">-- Choisissez un jour --</option>
+              {weekDates.map(d => (
+                <option key={d.value} value={d.value}>{d.label} ({d.value})</option>
+              ))}
+            </select>
           </label>
 
           <label>
-            Date et heure de fin*:
-            <input type="datetime-local" value={endDateTime} onChange={e => setEndDateTime(e.target.value)} required />
-          </label>
-
-          <label>
-            Numéro de slot:
+            Numéro de slot*:
             <input
               type="number"
               value={slotNumber}
               onChange={e => setSlotNumber(Number(e.target.value))}
-              min={0}
+              min={1}
+              max={10}
+              required
             />
           </label>
+
+          <p style={{ fontStyle: 'italic' }}>
+            Le créneau horaire sera automatiquement défini selon le slot choisi (durée : 45 min).
+          </p>
 
           {error && <p style={{ color: 'red' }}>{error}</p>}
 
