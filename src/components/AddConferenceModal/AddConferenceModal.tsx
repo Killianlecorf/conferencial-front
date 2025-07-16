@@ -40,6 +40,8 @@ export default function AddConferenceModal({ onClose, onAdded }: AddConferenceMo
     const [speakerBio, setSpeakerBio] = useState('');
     const [date, setDate] = useState('');
     const [slotNumber, setSlotNumber] = useState(1);
+    const [showSlotsModal, setShowSlotsModal] = useState(false);
+
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -130,6 +132,39 @@ export default function AddConferenceModal({ onClose, onAdded }: AddConferenceMo
                             required
                         />
                     </label>
+
+                    {showSlotsModal && (
+                        <div className="modal-overlay" onClick={() => setShowSlotsModal(false)} style={{
+                            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                            backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                        }}>
+                            <div className="modal" onClick={e => e.stopPropagation()} style={{
+                            backgroundColor: 'white', padding: 20, borderRadius: 5, maxWidth: 400,
+                            }}>
+                            <h3>Créneaux horaires</h3>
+                            <p style={{ fontStyle: 'italic' }}>
+                                Slot 1: 10h30 - 11h15<br />
+                                Slot 2: 11h30 - 12h15<br />
+                                Slot 3: 12h30 - 13h15<br />
+                                Slot 4: 13h30 - 14h15<br />
+                                Slot 5: 15h00 - 15h45<br />
+                                Slot 6: 16h00 - 16h45<br />
+                                Slot 7: 17h00 - 17h45<br />
+                                Slot 8: 18h00 - 18h45<br />
+                                Slot 9: 19h00 - 19h45<br />
+                                Slot 10: 20h00 - 20h45
+                            </p>
+                            <div className="modal-buttons">
+                                <button onClick={() => setShowSlotsModal(false)}>Fermer</button>
+                            </div>
+                            </div>
+                        </div>
+                    )}
+                    <div className="modal-buttons">
+                        <button type="button" onClick={() => setShowSlotsModal(true)} style={{ fontStyle: 'italic' }}>
+                            Voir les créneaux horaires disponibles
+                        </button>
+                    </div>
 
                     <p style={{ fontStyle: 'italic' }}>
                         Le créneau horaire sera automatiquement défini selon le slot choisi (durée : 45 min).
